@@ -1,561 +1,228 @@
-import React from "react";
-import { useState,useEffect,useRef } from "react";
-import './game_page.css'
+import React, { useState, useEffect, useRef } from "react";
+import './game_page.css';
 import { VscDebugRestart } from "react-icons/vsc";
 import { ImUndo2 } from "react-icons/im";
 import { IoIosSettings } from "react-icons/io";
-import { MdMusicNote } from "react-icons/md";
-import { MdMusicOff } from "react-icons/md";
-import { AiFillSound } from "react-icons/ai";
-import { AiOutlineSound } from "react-icons/ai";
-function Game()
-{
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchEndX = 0;
-    let touchEndY = 0;
-    const [orgArr,setOrgArr]=useState([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]])
-    const [dupArr,setdupArr]=useState([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]);
-    const [highScore,sethighScore]=useState(0);
-    const [Score,setScore]=useState(0);
-    const elements=[2,4,2,2];
-    const [music,setmusic]=useState(false);
-    const [sound,setsound]=useState(false);
-    const [music_option,setmusic_option]=useState(false);
-    useEffect(() => {
-        const audio=document.getElementById("audio");
-        if(!audio) return;
-        if (music) {
-          audio.loop = true;
-          audio.play().catch((error) => console.log("Autoplay blocked:", error));
-        } else {
-          audio.pause(); 
-          audio.currentTime = 0; 
-        }
-      }, [music]);
-    function sound_operation()
-    {
-        if(sound)
-        {
-        const a=document.getElementById("music")
-        if(a)
-        {
-            a.currentTime=0;
-            a.play();
-        }
-        }
-    }
-    useEffect(()=>{
-        if(Score>highScore)
-        {
-            sethighScore(Score);
-        }
-    },[Score])
-    useEffect(()=>{
-        restart()
-        var a=localStorage.getItem('high_score')
-        if(a)
-        sethighScore(a)
-    },[])
-    useEffect(()=>{
-        var empty=0;
-        for(let i=0;i<4;i++)
-        {
-            for(let j=0;j<4;j++)
-            {
-                if(orgArr[i][j]==0)
-                {
-                    empty+=1;
-                    break;
-                }
-                else
-                {
-                    if(i+1<4 && orgArr[i+1][j]==orgArr[i][j])
-                    {
-                        empty+=1;
-                        break;
-                    }
-                    if(i-1>=0 && orgArr[i-1][j]==orgArr[i][j])
-                    {
-                        empty+=1;
-                        break;
-                    }
-                    if(j+1<4 && orgArr[i][j+1]==orgArr[i][j] )
-                    {
-                        empty+=1;
-                        break;
-                    }
-                    if(j-1>=4 && orgArr[i][j-1]==orgArr[i][j] )
-                    {
-                        empty+=1;
-                        break;
-                    }
-                }
-            }
-            if(empty>0)
-            {
-                break;
-            }
-        }
-        if(empty==0)
-        {
-            // alert("game over");
-            open();
-        }
-    },[orgArr])
-    useEffect(() => {
-        window.addEventListener("keydown",keys);
-        return () => {
-            window.removeEventListener("keydown",keys);
-        };
-    }, [orgArr]);
-    function undo()
-    {
-        let count=0;
-        for(let i=0;i<4;i++)
-        {
-            for(let j=0;j<4;j++)
-            {
-                if(orgArr[i][j]!=0)
-                {
-                    count+=1;
-                }
-            }
-        }
-        if(count>1)
-        {
-            console.log(dupArr)
-        setOrgArr([...dupArr]);
-        }
-    }
-    function restart()
-    {
-        var arr=[[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
-        rand(arr);
-        setScore(0);
-    }
-    function rand(arr)
-    {
-        var index=0;
-        var empty=[];
-        for(let i=0;i<4;i++)
-        {
-            for(let j=0;j<4;j++)
-            {
-                index+=1;
-                if(arr[i][j]==0)
-                {
-                    empty.push(index);
-                }
-            }
-        }
-        var len=empty.length;
-        if(len>0)
-        {
-            var ind=Math.floor(Math.random() * (len))
-            var ele=Math.floor(Math.random()*(4))
-            index=0;
-            for(let i=0;i<4;i++)
-            {
-                for(let j=0;j<4;j++)
-                {   
-                    index+=1;
-                    if(index==empty[ind])
-                    {
-                        arr[i][j]=elements[ele]
-                        break;
-                    }
-                }
-            }
-            setOrgArr([...arr]);
-        }
-    }
-    function right()
-    {
-        sound_operation();
-        var arr=[...orgArr];
-        var score=0;
-        setdupArr([...orgArr]);
-        for(let i=0;i<4;i++)
-        {
-            var b=[...arr[i]];
-            var c=b[3];
-            var k=3;
-            for(let j=2;j>=0;j--)
-            {
-                if(c==b[j])
-                {
-                    b[j]*=2;
-                    b[k]=0;
-                    if(j-1>=0)
-                    {
-                        k=j-1;
-                        c=b[j-1];
-                        j-=1;
-                    }
-                }
-                else if(b[j]!=0)
-                {
-                    k=j;
-                    c=b[j];
-                }
-            }
-            for(let x=3;x>0;x--)
-            {
-                if(b[x]==0)
-                {
-                    for(let y=x-1;y>=0;y--)
-                    {
-                        if(b[y]>0)
-                        {
-                            b[x]=b[y];
-                            b[y]=0;
-                            break;
-                        }
-                    }
-                }
-            }
-            for(let j=0;j<4;j++)
-            {
-                score+=Math.abs(b[j]-arr[i][j]);
-            }
-            arr[i]=[...b];
-        }
-        setScore((s)=>s+score);
-        rand(arr)
-    }
-    function left()
-    {
-        sound_operation();
-        setdupArr([...orgArr]);
-        var arr=[...orgArr];
-        var score=0;
-        for(let i=0;i<4;i++)
-        {
-            var b=[...arr[i]];
-            var k=0;
-            var c=b[0];
-            for(let j=1;j<4;j++)
-            {
-                if(c==b[j])
-                {
-                    b[j]*=2;
-                    b[k]=0;
-                    if(j+1<4)
-                    {
-                        k=j+1;
-                        c=b[k];
-                        j+=1;
-                    }
-                }
-                else if(b[j]!=0)
-                {
-                    k=j;
-                    c=b[k];
-                }
-            }
-            for(let x=0;x<4;x++)
-            {
-                if(b[x]==0)
-                {
-                    for(let y=x+1;y<4;y++)
-                    {
-                        if(b[y]>0)
-                        {
-                            b[x]=b[y];
-                            b[y]=0;
-                            break;
-                        }
-                    }
-                }
-            }
-            for(let j=0;j<4;j++)
-            {
-                score+=Math.abs(arr[i][j]-b[j]);
-            }
-            arr[i]=[...b];
-        }
-        rand(arr);
-        setScore((s)=>s+score);
-    }
-    function up()
-    {
-        sound_operation();
-        // setdupArr([...orgArr]);
-        setdupArr(orgArr.map(row => [...row]));
-        var arr=[...orgArr];
-        var score=0;
-        for(let i=0;i<4;i++)
-        {
-            var b=[];
-            for(let j=0;j<4;j++)
-            {
-                b.push(arr[j][i]);
-            }
-            var c=b[0];
-            var k=0;
-            for(let j=1;j<4;j++)
-            {
-                if(c==b[j])
-                {
-                    b[j]*=2;
-                    b[k]=0;
-                    if(j+1<4)
-                    {
-                        c=b[j+1];
-                        k=j+1;
-                        j+=1;
-                    }
-                }
-                else if(b[j]!=0)
-                {
-                    k=j;
-                    c=b[j];
-                }
-            }
-            for(let x=0;x<4;x++)
-            {
-                if(b[x]==0)
-                {
-                    for(let y=x+1;y<4;y++)
-                    {
-                        if(b[y]>0)
-                        {
-                            b[x]=b[y];
-                            b[y]=0;
-                            break;
-                        }
-                    }
-                }
-            }
-            for(let j=0;j<4;j++)
-            {
-                score+=Math.abs(arr[j][i]-b[j]);
-                arr[j][i]=b[j];
+import { MdMusicNote, MdMusicOff } from "react-icons/md";
+import { AiFillSound, AiOutlineSound } from "react-icons/ai";
 
-            }
-        }
-        rand(arr)
-        setScore((s)=>s+score);
-    }
-    function down()
-    {
-        sound_operation();
-        // setdupArr([...orgArr]);
-        setdupArr(orgArr.map(row => [...row]));
+function Game() {
+  const backgroundAudio = useRef(null);
+  const soundEffect = useRef(null);
 
-        var arr=[...orgArr];
-        var score=0;
-        for(let i=0;i<4;i++)
-        {
-            var b=[];
-            for(let j=0;j<4;j++)
-            {
-                b.push(arr[j][i]);
-            }
-            var k=3;
-            var c=b[k];
-            for(let j=2;j>=0;j--)
-            {
-                if(c==b[j])
-                {
-                    b[j]*=2;
-                    b[k]=0;
-                    if(j-1>=0)
-                    {
-                        k=j-1;
-                        c=b[k];
-                        j-=1;
-                    }
-                }
-                else if(b[j]!=0)
-                {
-                    k=j;
-                    c=b[j];
-                }
-            }
-            for(let x=3;x>0;x--)
-            {
-                if(b[x]==0)
-                {
-                    for(let y=x-1;y>=0;y--)
-                    {
-                        if(b[y]!=0)
-                        {
-                            b[x]=b[y];
-                            b[y]=0;
-                            break;
-                        }
-                    }
-                }
-            }
-            for(let j=0;j<4;j++)
-            {
-                score+=Math.abs(arr[j][i]-b[j]);
-                arr[j][i]=b[j];
+  const [orgArr, setOrgArr] = useState(Array(4).fill(0).map(() => Array(4).fill(0)));
+  const [dupArr, setdupArr] = useState(Array(4).fill(0).map(() => Array(4).fill(0)));
+  const [highScore, sethighScore] = useState(0);
+  const [score, setScore] = useState(0);
+  const [music, setMusic] = useState(false);
+  const [sound, setSound] = useState(false);
+  const [musicOption, setMusicOption] = useState(false);
+  const [tileAnimation, setTileAnimation] = useState({});
 
-            }
-        }
-        rand(arr);
-        setScore((s)=>s+score);
-    }
-    function keys(ev)
-    {
-        const key=ev["key"];
-        // console.log(key)
-        if(key=="ArrowUp")
-        {
-            up();
-        }
-        else if(key=="ArrowDown")
-        {
-            down();
+  const elements = [2, 2, 2, 4];
 
-        }
-        else if(key=="ArrowRight")
-        {
-            right();
-        }
-        else if(key=="ArrowLeft")
-        {
-            left();
-        }
-    }
-    function close()
-    {
-        setScore(0);
-        restart();
-        document.getElementById("gameover").style.display="none";
-        localStorage.setItem('high_score',highScore);
-    }
-    function open()
-    {
-        document.getElementById("gameover").style.display="flex";
-    }
-    useEffect(() => {
-        const preventPullToRefresh = (e) => {
-            if (e.touches && e.touches.length > 0 && e.touches[0].clientY < window.scrollY + 50) {
-                e.preventDefault();
-            }
-        };
+  useEffect(() => {
+    const savedScore = localStorage.getItem("high_score");
+    if (savedScore) sethighScore(Number(savedScore));
+    restart();
+  }, []);
 
-        document.addEventListener("touchmove", preventPullToRefresh, { passive: false });
+  useEffect(() => {
+    localStorage.setItem("high_score", highScore);
+  }, [highScore]);
 
-        return () => {
-            document.removeEventListener("touchmove", preventPullToRefresh);
-        };
-    }, []);
-    const handleTouchStart = (event) => {
-        touchStartX = event.touches[0].clientX;
-        touchStartY = event.touches[0].clientY;
+  useEffect(() => {
+    if (!backgroundAudio.current) return;
+    if (music) {
+      backgroundAudio.current.loop = true;
+      backgroundAudio.current.play().catch(() => {});
+    } else {
+      backgroundAudio.current.pause();
+      backgroundAudio.current.currentTime = 0;
+    }
+  }, [music]);
+
+  function playSound() {
+    if (sound && soundEffect.current) {
+      soundEffect.current.currentTime = 0;
+      soundEffect.current.play();
+    }
+  }
+
+  useEffect(() => {
+    let hasMoves = false;
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        if (orgArr[i][j] === 0 ||
+            (i < 3 && orgArr[i][j] === orgArr[i + 1][j]) ||
+            (j < 3 && orgArr[i][j] === orgArr[i][j + 1])) {
+          hasMoves = true;
+          break;
+        }
+      }
+      if (hasMoves) break;
+    }
+    if (!hasMoves) document.getElementById("gameover").style.display = "flex";
+  }, [orgArr]);
+
+  useEffect(() => {
+    const handler = (ev) => {
+      const key = ev.key;
+      if (key === "ArrowUp") up();
+      else if (key === "ArrowDown") down();
+      else if (key === "ArrowLeft") left();
+      else if (key === "ArrowRight") right();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [orgArr]);
+
+  const restart = () => {
+    let arr = Array(4).fill(0).map(() => Array(4).fill(0));
+    randomTile(arr);
+    setScore(0);
+  };
+
+  const undo = () => {
+    setOrgArr(dupArr.map(row => [...row]));
+  };
+
+  const randomTile = (arr) => {
+    let empty = [];
+    arr.forEach((row, i) => {
+      row.forEach((cell, j) => {
+        if (cell === 0) empty.push([i, j]);
+      });
+    });
+    if (empty.length > 0) {
+      const [i, j] = empty[Math.floor(Math.random() * empty.length)];
+      arr[i][j] = Math.random() < 0.9 ? 2 : 4;
+      setTileAnimation({ [`${i}-${j}`]: "pop" });
+      setTimeout(() => setTileAnimation({}), 300);
+      setOrgArr(arr.map(row => [...row]));
+    }
+  };
+
+  const move = (direction) => {
+    playSound();
+    const arr = orgArr.map(row => [...row]);
+    setdupArr(orgArr.map(row => [...row]));
+    let moved = false;
+    let currentScore = 0;
+
+    const combine = (line) => {
+      let newLine = line.filter(v => v !== 0);
+      for (let i = 0; i < newLine.length - 1; i++) {
+        if (newLine[i] === newLine[i + 1]) {
+          newLine[i] *= 2;
+          newLine[i + 1] = 0;
+          currentScore += newLine[i];
+        }
+      }
+      return newLine.filter(v => v !== 0).concat(Array(4).fill(0)).slice(0, 4);
     };
 
-    const handleTouchEnd = (event) => {
-        touchEndX = event.changedTouches[0].clientX;
-        touchEndY = event.changedTouches[0].clientY;
-        detectSwipeDirection();
-    };
-    const handleTouchMove = (event) => {
-        const moveY = event.touches[0].clientY;
-        if (moveY > touchStartY) {
-            // Prevents pull-to-refresh behavior
-            event.preventDefault();
-        }
-    };
+    for (let i = 0; i < 4; i++) {
+      let originalLine = [];
+      let newLine = [];
+      switch (direction) {
+        case "left":
+          originalLine = arr[i];
+          newLine = combine(originalLine);
+          arr[i] = newLine;
+          break;
+        case "right":
+          originalLine = arr[i].slice().reverse();
+          newLine = combine(originalLine).reverse();
+          arr[i] = newLine;
+          break;
+        case "up":
+          originalLine = arr.map(row => row[i]);
+          newLine = combine(originalLine);
+          for (let j = 0; j < 4; j++) arr[j][i] = newLine[j];
+          break;
+        case "down":
+          originalLine = arr.map(row => row[i]).reverse();
+          newLine = combine(originalLine).reverse();
+          for (let j = 0; j < 4; j++) arr[j][i] = newLine[j];
+          break;
+        default:
+          break;
+      }
+      if (JSON.stringify(originalLine) !== JSON.stringify(newLine)) moved = true;
+    }
 
-    const detectSwipeDirection = () => {
-        const deltaX = touchEndX - touchStartX;
-        const deltaY = touchEndY - touchStartY;
+    if (moved) {
+      setScore(prev => prev + currentScore);
+      if (score + currentScore > highScore) sethighScore(score + currentScore);
+      randomTile(arr);
+    }
+  };
 
-        if (Math.abs(deltaX) > Math.abs(deltaY)) {
-            if (deltaX > 50) {
-                right();
-            } else if (deltaX < -50) {
-                left();
-            }
-        } else {
-            if (deltaY > 50) {
-               down();
-            } else if (deltaY < -50) {
-                up();
-            }
-        }
-    };
-    return(
-        <>
-            <audio id="audio" src="background_music.mp3" />
-            <audio id="music" src="music.mp3"/>
-            <div id="main">
-                <div id="main_header">
-                <div id="logo2048">2048</div>
+  const up = () => move("up");
+  const down = () => move("down");
+  const left = () => move("left");
+  const right = () => move("right");
+
+  const close = () => {
+    setScore(0);
+    restart();
+    document.getElementById("gameover").style.display = "none";
+  };
+
+  return (
+    <>
+      <audio ref={backgroundAudio} src="background_music.mp3" />
+      <audio ref={soundEffect} src="music.mp3" />
+
+      <div id="main">
+        <div id="main_header"><div id="logo2048">2048</div></div>
+
+        <div id="main_body">
+          <div id="score_board">
+            <div id="high-score"><div id="header">HIGH SCORE</div><div id="score">{highScore}</div></div>
+            <div id="high-score"><div id="header">SCORE</div><div id="score">{score}</div></div>
+          </div>
+
+          <div id="board">
+            {orgArr.map((row, i) => (
+              <div className="row" key={i}>
+                {row.map((cell, j) => (
+                  <div
+                    className={`cell id_${cell} ${tileAnimation[`${i}-${j}`] || ''}`.trim()}
+                    key={`${i}-${j}`}
+                  >
+                    {cell !== 0 ? cell : ''}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          <div id="gameover" className="shake">
+            <div id="game_over_message">GAME OVER !!</div>
+            <div id="game_over_restart" onClick={close}><VscDebugRestart /></div>
+          </div>
+
+          <div id="options">
+            <div id="restart" onClick={restart}><VscDebugRestart /></div>
+            <div id="undo" onClick={undo}><ImUndo2 /></div>
+            <div id="settings" onClick={() => setMusicOption(prev => !prev)}>
+              <IoIosSettings />
+              <div id="music" style={{ display: musicOption ? "flex" : "none" }}>
+                <div onClick={() => setMusic(mu => !mu)}>
+                  {music ? <MdMusicNote /> : <MdMusicOff />}
                 </div>
-                <div id="main_body" onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd} onTouchMove={handleTouchMove}>
-                    <div id="score_board">
-                        <div id="high-score">
-                            <div id="header">
-                                HIGH SCORE
-                            </div>
-                            <div id="score">{highScore}</div>
-                        </div>
-                        <div id="high-score">
-                            <div id="header">
-                                 SCORE
-                            </div>
-                            <div id="score">{Score}</div>
-                        </div>
-                    </div>
-                    <div id="board">
-                        {
-                           orgArr.map((row, rowIndex) => {
-                            return (
-                                <div className="row" key={rowIndex}>
-                                    {
-                                        row.map((cell, cellIndex) => {
-
-                                            return (
-                                                <div 
-                                                    className="cell"
-                                                    id={`id_${cell}`}
-                                                >
-                                                    {cell}
-                                                    {/* 2048 */}
-                                                </div>
-                                            );
-                                        })
-                                    }
-                                </div>
-                            );
-                        })
-                        }
-                    </div>
-                    <div id="gameover">
-                            <div id="game_over_message">
-                                GAME OVER !!
-                            </div>
-                            <div id="game_over_restart" onClick={()=>{close()}}>
-                                <VscDebugRestart />
-                            </div>
-                    </div>
-                    <div id="options">
-                        <div id="restart" onClick={()=>{restart()}}>
-                            <VscDebugRestart />
-                        </div>
-                        <div id="undo" onClick={()=>{undo()}}>
-                            <ImUndo2 />
-                        </div>
-                        <div id="undo" onClick={()=>setmusic_option(bool=>!bool)}>
-                            <IoIosSettings />
-                            <div id="music" style={{display: music_option ? "flex" : "none" }} >
-                                <div style={{userSelect:"none"}} onClick={()=>{setmusic((mu)=>!mu)}}><div style={{display:music ? "flex" : "none"}}><MdMusicNote  /></div><div style={{display:music ? "none" : "flex"}}> <MdMusicOff /> </div></div>
-                                <div style={{userSelect:"none"}} onClick={()=>{setsound((mu)=>!mu)}}><div style={{display:sound ? "flex" : "none"}}><AiFillSound /></div><div style={{display:sound ? "none" : "flex"}}> <AiOutlineSound /> </div></div>
-                            </div>
-                        </div>
-                    </div>
+                <div onClick={() => setSound(mu => !mu)}>
+                  {sound ? <AiFillSound /> : <AiOutlineSound />}
                 </div>
+              </div>
             </div>
-        </>
-    )
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default Game;
